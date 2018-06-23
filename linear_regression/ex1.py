@@ -47,7 +47,7 @@ def ex1(file_path, alpha, epoch_range=100000, step=10000):
       if (epoch % step == 0):
         print("epoch: {}, cost={}, W={}".format(epoch, c, sess.run(W)))
 
-    # predict price on original data
+    # predict price on original data(don't do this at home ;)
     for i in range(m):
       x1 = [[raw_data[0][i], raw_data[1][i]]]
       y = [raw_data[2][i]]
