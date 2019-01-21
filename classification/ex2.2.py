@@ -2,7 +2,7 @@
 
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler, MaxAbsScaler, StandardScaler
 
 def plot_data(data):
@@ -17,7 +17,7 @@ def plot_data(data):
 
 def ex2(file_path, alpha, epoch_range=50000, step=5000):
   raw_data = np.loadtxt(file_path, delimiter=',', unpack=False)
-  plot_data(raw_data)
+  #plot_data(raw_data)
 
   train_x = np.column_stack((np.ones(len(raw_data)), raw_data[:, 0:2]))
   train_y = np.asmatrix(raw_data[:, 2]).T

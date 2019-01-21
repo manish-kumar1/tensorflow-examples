@@ -39,15 +39,16 @@ def ex1(file_path, alpha, epoch_range=100000, step=10000):
     pred = tf.matmul(X, W)
     J = tf.reduce_mean(tf.square(tf.subtract(pred,Y)))
     optimizer = tf.train.GradientDescentOptimizer(alpha).minimize(J)
+    acc, acc_up = tf.metrics.accuracy(data['y'], pred)
 
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     for epoch in range(epoch_range):
-      _, c = sess.run([optimizer, J], feed_dict={X: train_x, Y: train_y})
+      _, c, _ = sess.run([optimizer, J, acc_up], feed_dict={X: train_x, Y: train_y})
       if (epoch % step == 0):
-        print("epoch: {}, cost={}, W={}".format(epoch, c, sess.run(W)))
+        print("epoch: {}, cost={}, W={}, acc={}".format(epoch, c, sess.run(W), sess.run(acc)))
 
-    # predict price on original data(don't do this at home ;)
+    # predict price on original data(don't try this at home ;)
     for i in range(m):
       x1 = [[raw_data[0][i], raw_data[1][i]]]
       y = [raw_data[2][i]]

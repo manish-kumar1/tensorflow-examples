@@ -13,10 +13,11 @@ def plot_data(data):
     axis.scatter(data[i, 0], data[i, 1], marker=m[int(data[i, 2])], c=c[int(data[i, 2])]) 
 
   fig.show()
+  plt.show()
 
 def ex2(file_path, alpha, epoch_range=500000, step=5000):
   raw_data = np.loadtxt(file_path, delimiter=',', unpack=False)
-  #plot_data(raw_data)
+  plot_data(raw_data)
 
   train_x = np.column_stack((np.ones(len(raw_data)), raw_data[:, 0:2]))
   train_y = np.asmatrix(raw_data[:, 2]).T

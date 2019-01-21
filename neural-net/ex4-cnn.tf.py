@@ -7,7 +7,9 @@ batch_size=1
 num_steps = 2000
 learning_rate = 0.001
 
+
 def cnn(x, n_classes, dropout, reuse, is_training):
+    #
     with tf.variable_scope('conv_net', reuse=reuse):
         x = tf.reshape(x, shape=[-1, 20, 20, 1])
 
@@ -41,7 +43,7 @@ def model_fn(features, labels, mode):
     if mode == tf.estimator.ModeKeys.PREDICT:
         return tf.estimator.EstimatorSpec(mode, predictions=pred_classes)
 
-        # Define loss and optimizer
+    # Define loss and optimizer
     loss_op = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
         logits=logits_train, labels=tf.cast(labels, dtype=tf.int32)))
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -70,26 +72,39 @@ if __name__ == '__main__':
     train_x = raw_data['X']
     train_y = raw_data['y']
 
-    # Build the Estimator
-    model = tf.estimator.Estimator(model_fn)
-
     # update, since 0 is labeled as 10
     train_y[train_y == 10] = 0
 
-    # Define the input function for training
-    input_fn = tf.estimator.inputs.numpy_input_fn(
-        x=train_x, y=train_y,
-        batch_size=batch_size, num_epochs=None, shuffle=True)
-    # Train the Model
-    model.train(input_fn, steps=num_steps)
+    features_placeholder = tf.placeholder(train_x.dtype, train_x.shape)
+    labels_placeholder = tf.placeholder(train_y.dtype, train_y.shape)
 
-    # Evaluate the Model
-    # Define the input function for evaluating
-    input_fn = tf.estimator.inputs.numpy_input_fn(
-        x=raw_data['X'], y=raw_data['y'],
-        batch_size=batch_size, shuffle=False)
-    # Use the Estimator 'evaluate' method
-    e = model.evaluate(input_fn)
+    features = tf.data.Dataset.from_tensor_slices(train_x)
+    labels = tf.data.Dataset.from_tensor_slices(train_y).map(lambda y: y%10)
 
-    print("Testing Accuracy:", e['accuracy'])
-    
+    dataset = tf.data.Dataset.zip((features, labels))
+    iterator = dataset.make_initializable_iterator()
+
+    with tf.Session() as sess:
+        sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
+        sess.run(iterator.initializer, feed_dict={features_placeholder: train_x, labels_placeholder: train_y})
+
+        #Build the Estimator
+        model = tf.estimator.Estimator(model_fn)
+
+        # Define the input function for training
+        input_fn = tf.estimator.inputs.numpy_input_fn(
+            x=train_x, y=train_y,
+            batch_size=batch_size, num_epochs=None, shuffle=True)
+        # Train the Model
+        model.train(iterator, steps=num_steps)
+
+        # Evaluate the Model
+        # Define the input function for evaluating
+        input_fn = tf.estimator.inputs.numpy_input_fn(
+            x=raw_data['X'], y=raw_data['y'],
+            batch_size=batch_size, shuffle=False)
+        # Use the Estimator 'evaluate' method
+        e = model.evaluate(input_fn)
+
+        print("Testing Accuracy:", e['accuracy'])
+
